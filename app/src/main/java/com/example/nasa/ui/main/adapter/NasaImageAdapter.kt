@@ -1,5 +1,6 @@
 package com.example.nasa.ui.main.adapter
 
+import android.content.Context
 import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
@@ -20,67 +21,36 @@ import com.example.nasa.data.model.NasaImageResponseItem
 import com.example.nasa.databinding.ImageCardBinding
 import com.example.nasa.ui.main.view.fragment.HomeFragment
 import com.example.nasa.ui.main.viewmodel.HomeViewModel
+import com.example.nasa.util.Extension.fileName
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
 
 class NasaImageAdapter(
-    gridFragment: HomeFragment,
-    private val nasaImageDta: ArrayList<NasaImageResponseItem>,
-    homeViewModel: HomeViewModel
+    private val fragment: Fragment,
+    private val context: Context,
+    private val nasaImageDta: ArrayList<NasaImageResponseItem>
 ) :
     RecyclerView.Adapter<NasaImageAdapter.ImageViewHolder>() {
-    private val requestManager: RequestManager = Glide.with(gridFragment)
-    private val viewHolderListener: ViewHolderListener = ViewHolderListenerImpl(gridFragment, homeViewModel)
+    private val requestManager: RequestManager = Glide.with(context)
+    lateinit var listener: ItemClickListener
 
-    class ViewHolderListenerImpl(private val fragment: Fragment, private val homeViewModel: HomeViewModel) : ViewHolderListener {
-        private val enterTransitionStarted: AtomicBoolean = AtomicBoolean()
-        override fun onLoadCompleted(view: ImageView, adapterPosition: Int) {
-            if (homeViewModel.currentPosition != adapterPosition) {
-                return
-            }
-            if (enterTransitionStarted.getAndSet(true)) {
-                return
-            }
-            fragment.startPostponedEnterTransition()
-        }
-
-        override fun onItemClicked(view: View, adapterPosition: Int) {
-            homeViewModel.currentPosition = adapterPosition
-            view.findNavController().navigate(R.id.action_fragment_home_to_fragment_image_pager)
-        }
-    }
-
-    interface ViewHolderListener {
-        fun onLoadCompleted(view: ImageView, adapterPosition: Int)
-
-        fun onItemClicked(view: View, adapterPosition: Int)
-    }
-
-    inner class ImageViewHolder(
-        var binding: ImageCardBinding
-    ) : RecyclerView.ViewHolder(binding.root), View.OnClickListener {
-
-        init {
-            binding.root.setOnClickListener(this)
-        }
-
-        override fun onClick(v: View) {
-            viewHolderListener.onItemClicked(v, adapterPosition)
-        }
-
-        fun onBind() {
-            val adapterPosition = adapterPosition
-            setImage(adapterPosition)
+    inner class ImageViewHolder(var binding: ImageCardBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun onBind(item: NasaImageResponseItem) {
+            setImage(item)
             binding.apply {
-                cardImage.transitionName = nasaImageDta[adapterPosition].toString()
+                cardImage.transitionName = item.url.fileName()
+            }
+            binding.root.setOnClickListener {
+                listener.onItemClickListener(adapterPosition, item, binding.cardImage)
             }
         }
 
-        private fun setImage(adapterPosition: Int) {
+        private fun setImage(item: NasaImageResponseItem) {
             requestManager
-                .load(nasaImageDta[adapterPosition].url)
+                .load(item.url)
                 .placeholder(R.drawable.image_placeholder)
                 .listener(object : RequestListener<Drawable?> {
                     override fun onLoadFailed(
@@ -89,7 +59,7 @@ class NasaImageAdapter(
                         target: Target<Drawable?>,
                         isFirstResource: Boolean
                     ): Boolean {
-                        viewHolderListener.onLoadCompleted(binding.cardImage, adapterPosition)
+                        fragment.startPostponedEnterTransition()
                         return false
                     }
 
@@ -100,7 +70,7 @@ class NasaImageAdapter(
                         dataSource: DataSource,
                         isFirstResource: Boolean
                     ): Boolean {
-                        viewHolderListener.onLoadCompleted(binding.cardImage, adapterPosition)
+                        fragment.startPostponedEnterTransition()
                         return false
                     }
                 })
@@ -120,10 +90,14 @@ class NasaImageAdapter(
     }
 
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
-        holder.onBind()
+        holder.onBind(nasaImageDta[position])
     }
 
     override fun getItemCount(): Int {
         return nasaImageDta.size
+    }
+
+    interface ItemClickListener {
+        fun onItemClickListener(position: Int, item: NasaImageResponseItem, imageView: ImageView)
     }
 }

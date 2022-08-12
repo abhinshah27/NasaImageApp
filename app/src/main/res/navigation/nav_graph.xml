@@ -2,28 +2,24 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    app:startDestination="@id/fragment_splash"
-    android:id="@+id/nav_graph">
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/fragment_splash">
     <fragment
         android:id="@+id/fragment_splash"
         android:name="com.example.nasa.ui.main.view.fragment.SplashFragment"
         android:label="FragmentSplash"
-        tools:layout="@layout/fragment_splash" >
+        tools:layout="@layout/fragment_splash">
         <action
             android:id="@+id/action_fragment_splash_to_fragment_home"
-            app:destination="@id/fragment_home"/>
+            app:destination="@id/fragment_home" />
     </fragment>
 
     <fragment
         android:id="@+id/fragment_home"
         android:name="com.example.nasa.ui.main.view.fragment.HomeFragment"
         android:label="FragmentHome"
-        tools:layout="@layout/fragment_home" >
+        tools:layout="@layout/fragment_home">
         <action
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left"
-            app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right"
             android:id="@+id/action_fragment_home_to_fragment_image_pager"
             app:destination="@id/fragment_image_pager" />
     </fragment>

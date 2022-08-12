@@ -7,7 +7,7 @@ import com.example.nasa.data.model.NasaImageResponseItem
 import com.example.nasa.ui.main.view.fragment.ImageFragment
 
 class ImagePagerAdapter(
-    fa: FragmentActivity,
+    fa: Fragment,
     private val nasaImageDta: ArrayList<NasaImageResponseItem>?
 ) : FragmentStateAdapter(fa) {
 
